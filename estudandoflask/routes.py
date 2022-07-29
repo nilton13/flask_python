@@ -10,7 +10,8 @@ from PIL import Image
 
 @app.route('/') # Criando Link de uma nova Página
 def home(): # Função para mostrar algo na Página
-    return render_template('home.html')
+    posts = Post.query.order_by(Post.id.desc())
+    return render_template('home.html', posts = posts)
 
 @app.route('/usuarios')
 @login_required
@@ -112,3 +113,9 @@ def editar_perfil():
         form.username.data = current_user.username
     foto_perfil = url_for('static', filename='fotos_perfil/{}'.format(current_user.foto_perfil))
     return render_template('editarperfil.html', foto_perfil=foto_perfil, form=form)
+
+
+@app.route('/post/<post_id>')
+def exibir_post(post_id):
+    post = Post.query.get(post_id)
+    return render_template('post.html', post=post)

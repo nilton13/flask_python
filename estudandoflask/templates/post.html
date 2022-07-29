@@ -2,10 +2,7 @@
 
 {% block body %}
     <div class="container mt-3">
-        <h1 >Share Point - Cometa Supermercados</h1>
-        <h2>Post, treinamentos em um só lugar!</h2> 
-        <hr>
-        {% for post in posts %}
+       
             <div class="row border mt-4 p-3 meupost">
                 <div class="col col-2">
                     <div class="image pe-2">
@@ -19,10 +16,9 @@
                     </div>
                 </div>
                 <div class="col col-9">
-                    <a style="text-decoration: none" href="{{ url_for('exibir_post', post_id=post.id) }}"><h3>{{ post.titulo }}</h3></a>
+                    <h3>{{ post.titulo }}</h3>
                     <p>{{ post.corpo }}</p>
                 </div>
             </div>
-        {% endfor %}
     </div>
 {% endblock %}
