@@ -1,13 +1,12 @@
 from flask import render_template, redirect, url_for, flash, request
 from estudandoflask import app,database, bcrypt
-from estudandoflask.forms import FormLogin, FormCriarConta, FormEditarPerfil
-from estudandoflask.models import Usuario
+from estudandoflask.forms import FormLogin, FormCriarConta, FormEditarPerfil, FormCriarPost
+from estudandoflask.models import Usuario, Post
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 import os
 from PIL import Image
 
-lista_usuarios = ['Nilton', 'Naiane', 'Olivia']
 
 @app.route('/') # Criando Link de uma nova Página
 def home(): # Função para mostrar algo na Página
@@ -16,6 +15,7 @@ def home(): # Função para mostrar algo na Página
 @app.route('/usuarios')
 @login_required
 def usuarios():
+    lista_usuarios = Usuario.query.all()
     return render_template('usuarios.html', lista_usuarios=lista_usuarios)
 
 @app.route('/login', methods=['GET','POST'])
@@ -59,10 +59,26 @@ def perfil():
     foto_perfil = url_for('static', filename='fotos_perfil/{}'.format(current_user.foto_perfil))
     return render_template('perfil.html', foto_perfil=foto_perfil)
 
-@app.route('/post/criar')
+@app.route('/post/criar', methods=['GET','POST'])
 @login_required #Só acessa se o usuário estiver logado.
 def criar_post():
-    return render_template('criarpost.html')
+    form = FormCriarPost()
+    if form.validate_on_submit():
+        post = Post(titulo=form.titulo.data, corpo=form.corpo.data, autor=current_user)
+        database.session.add(post) # Adicionando a sessão no Banco de Dados
+        database.session.commit() 
+        flash('Post criado com sucesso', 'alert-success')
+        return redirect(url_for('home'))
+    return render_template('criarpost.html', form=form)
+
+
+def atualizar_cursos(form):
+    lista_cursos = []
+    for campo in form:
+        if 'curso_' in campo.name:
+            if campo.data:
+                lista_cursos.append(campo.label.text)
+    return ';'.join(lista_cursos)
 
 # Cria e adiciona um código único ao nome do arquivo e altera o tamanho da imagem.
 def salvar_imagem(imagem):
@@ -87,6 +103,7 @@ def editar_perfil():
         if form.foto_perfil.data:
             nome_imagem = salvar_imagem(form.foto_perfil.data)
             current_user.foto_perfil = nome_imagem
+        current_user.cursos = atualizar_cursos(form)
         database.session.commit()
         flash(f'Perfil atualizado com sucesso!', 'alert-success')
         return redirect(url_for('perfil'))
