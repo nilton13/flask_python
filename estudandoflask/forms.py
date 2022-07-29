@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from estudandoflask.models import Usuario
@@ -29,10 +30,12 @@ class FormLogin(FlaskForm):
 class FormEditarPerfil(FlaskForm):
     username = StringField("Nome de usuário", validators=[DataRequired()])
     email = StringField("E-mail", validators=[DataRequired(), Email()])
+    foto_perfil = FileField('Atualizar foto de Perfil', validators=[FileAllowed(['jpg','png'])])
     botao_submit_editarperfil = SubmitField("Editar Perfil")
 
+    # Validando se o email de edição já pertence a um outro usuário
     def validate_email(self, email):
         if current_user.email != email.data:
-            usuario = Usuario.query.filter_by(email=email.data).first()
+            usuario = Usuario.query.filter_by(email=email.data).first() # Recuperando usuário através do Email
             if usuario:
                 raise ValidationError("Email já em uso!")
